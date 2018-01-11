@@ -1,0 +1,19 @@
+{
+  "name": "starship-service",
+  "version": "0.0.1",
+  "description": "The bookmark management service for Starship",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cachilders/starship-service.git"
+  },
+  "author": "Casey A. Childers",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cachilders/starship-service/issues"
+  },
+  "homepage": "https://github.com/cachilders/starship-service#readme"
+}
