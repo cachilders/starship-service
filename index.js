@@ -25,7 +25,7 @@ app.use((req, res, next) => {
 passport.use(new GithubStrategy({
   clientID: process.env.GITHUB_CLIENT_ID,
   clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  callbackURL: 'http://localhost:8080/authenticate/callback'
+  callbackURL: 'https://zoneofavoidance.com/authenticate/callback'
 }, (accessToken, refreshToken, profile, done) => {
   done(null, {
     accessToken: accessToken,
