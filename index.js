@@ -36,12 +36,12 @@ passport.use(new GithubStrategy({
 passport.serializeUser((user, done) => done(null, user))
 passport.deserializeUser((user, done) => done(null, user))
 
-async function fetchStars(username, page = 1, res = []) {
-  let url = `https://api.github.com/users/${username}/starred?page=${page}&per_page=100`
+async function fetchStars(username, access, page = 1, res = []) {
+  let url = `https://api.github.com/users/${username}/starred?access_token=${access}&page=${page}&per_page=100`
   const pageRaw = await fetch(url)
   const pageRes = await pageRaw.json()
   if (pageRes.length === 100) {
-    return fetchStars.call(this, username, page + 1, res.concat(pageRes))
+    return fetchStars.call(this, username, access, page + 1, res.concat(pageRes))
   }
   return res.concat(pageRes)
 }
@@ -54,8 +54,8 @@ app.get('/authenticate/callback',
 )
 
 app.get('/stars', async (req, res, next) => {
-  const { username } = req.query
-  const stars = await fetchStars(username)
+  const { username, access } = req.query
+  const stars = await fetchStars(username, access)
   res.send(stars)
 })
 

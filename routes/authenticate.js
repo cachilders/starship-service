@@ -1,7 +1,9 @@
 exports.callback = function(req, res){
-  res.send(req.user)
+  const { accessToken, profile } = req.user
+  const { username } = profile
+  res.redirect(`http://localhost:3000/?access=${ accessToken }&username=${ username }`)
 }
 
 exports.error = function(req, res){
-  res.send('Login Failed')
+  res.redirect(`http://localhost:3000/?error`)
 }
