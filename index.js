@@ -46,7 +46,13 @@ async function fetchStars(username, access, page = 1, res = []) {
   return res.concat(pageRes)
 }
 
-app.get('/authenticate', passport.authenticate('github'))
+async function deleteStar(access, repo, owner) {
+  let url = `https://api.github.com/user/starred/${owner}/${repo}?access_token=${access}`
+  const { status } = await fetch(url, {method: 'DELETE'})
+  return status
+}
+
+app.get('/authenticate', passport.authenticate('github', { scope: 'gist, repo' }))
 app.get('/authenticate/error', authenticate.error)
 app.get('/authenticate/callback',
   passport.authenticate('github', {failureRedirect: '/authenticate/error'}),
@@ -59,6 +65,11 @@ app.get('/stars', async (req, res, next) => {
   res.send(stars)
 })
 
+app.get('/unstar', async (req, res, next) => {
+  const { access, repo, owner } = req.query
+  const message = await deleteStar(access, repo, owner)
+  res.send(message)
+})
 
 let port = process.env.PORT || 8080
 http.listen(port, function(){})
