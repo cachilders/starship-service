@@ -25,7 +25,7 @@ app.use((req, res, next) => {
 passport.use(new GithubStrategy({
   clientID: process.env.GITHUB_CLIENT_ID,
   clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  callbackURL: 'https://zoneofavoidance.com/authenticate/callback'
+  callbackURL: `${process.env.DEV_CALLBACK_URL || 'https://zoneofavoidance.com'}/authenticate/callback`
 }, (accessToken, refreshToken, profile, done) => {
   done(null, {
     accessToken: accessToken,
@@ -36,38 +36,7 @@ passport.use(new GithubStrategy({
 passport.serializeUser((user, done) => done(null, user))
 passport.deserializeUser((user, done) => done(null, user))
 
-async function fetchStars(username, access, page = 1, res = []) {
-  const url = `https://api.github.com/users/${username}/starred?access_token=${access}&page=${page}&per_page=100`
-  const pageRaw = await fetch(url)
-  const pageRes = await pageRaw.json()
-  if (pageRes.length === 100) {
-    return fetchStars.call(this, username, access, page + 1, res.concat(pageRes))
-  }
-  return res.concat(pageRes)
-}
-
-async function deleteStar(access, repo, owner) {
-  const url = `https://api.github.com/user/starred/${owner}/${repo}?access_token=${access}`
-  const { status } = await fetch(url, {method: 'DELETE'})
-  return status
-}
-
-async function fetchGists(access) {
-  const url = `https://api.github.com/gists?access_token=${access}`
-  const raw = await fetch(url)
-  const gists = await raw.json()
-  return gists
-}
-
-async function exportStars(access, payload, id) {
-  const patchId = id ? `/${id}` : ''
-  const url = `https://api.github.com/gists${patchId}?access_token=${access}`
-  const raw = await fetch(url, {method: id ? 'PATCH' : 'POST', body: payload})
-  const gist = await raw.json()
-  return gist
-}
-
-app.get('/authenticate', passport.authenticate('github', { scope: 'gist, repo' }))
+app.get('/authenticate', passport.authenticate('github', { scope: 'gist, repo', cookie: { maxAge: 60000 }}))
 app.get('/authenticate/error', authenticate.error)
 app.get('/authenticate/callback',
   passport.authenticate('github', {failureRedirect: '/authenticate/error'}),
@@ -108,6 +77,37 @@ app.post('/export', async (req, res, next) => {
     res.sendStatus(500)
   }
 })
+
+async function fetchStars(username, access, page = 1, res = []) {
+  const url = `https://api.github.com/users/${username}/starred?access_token=${access}&page=${page}&per_page=100`
+  const pageRaw = await fetch(url)
+  const pageRes = await pageRaw.json()
+  if (pageRes.length === 100) {
+    return fetchStars.call(this, username, access, page + 1, res.concat(pageRes))
+  }
+  return res.concat(pageRes)
+}
+
+async function deleteStar(access, repo, owner) {
+  const url = `https://api.github.com/user/starred/${owner}/${repo}?access_token=${access}`
+  const { status } = await fetch(url, {method: 'DELETE'})
+  return status
+}
+
+async function fetchGists(access) {
+  const url = `https://api.github.com/gists?access_token=${access}`
+  const raw = await fetch(url)
+  const gists = await raw.json()
+  return gists
+}
+
+async function exportStars(access, payload, id) {
+  const patchId = id ? `/${id}` : ''
+  const url = `https://api.github.com/gists${patchId}?access_token=${access}`
+  const raw = await fetch(url, {method: id ? 'PATCH' : 'POST', body: payload})
+  const gist = await raw.json()
+  return gist
+}
 
 let port = process.env.PORT || 8080
 http.listen(port, function(){})
