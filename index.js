@@ -37,7 +37,7 @@ passport.serializeUser((user, done) => done(null, user))
 passport.deserializeUser((user, done) => done(null, user))
 
 // TODO: Need a proper session solution for auth
-app.get('/authenticate', passport.authenticate('github', { scope: 'gist, repo', cookie: { maxAge: 60000 }}))
+app.get('/authenticate', passport.authenticate('github', { scope: 'gist, repo', cookie: {}}))
 app.get('/authenticate/error', authenticate.error)
 app.get('/authenticate/callback',
   passport.authenticate('github', {failureRedirect: '/authenticate/error'}),
